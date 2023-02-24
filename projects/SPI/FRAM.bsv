@@ -88,7 +88,7 @@ module mkFRAMMaster(LoRaIfc);
 		spi.setNcs(0);
 	endmethod
 	
-	method Action readReq(Bit#(32) addr) if (writeEnable && idle);
+	method Action readReq(Bit#(32) addr) if (idle);
 		buffer[0:7] <= 8'b00000011; //OPCODE_READ
 		buffer[8:15] <= addr[31:24];
 		buffer[16:23] <= addr[23:16];
