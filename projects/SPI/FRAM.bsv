@@ -55,6 +55,7 @@ module mkFRAMMaster(LoRaIfc);
 				readWait <= True;
 			end else begin
 				spi.setNcs(1);
+				idle <= True;
 			end
 		end
 	endrule
@@ -64,6 +65,7 @@ module mkFRAMMaster(LoRaIfc);
 		readWait <= False;
 		readReady <= True;
 		spi.setNcs(1);
+		idle <= True;
 	endrule
 	
 	method Action writeEnable(Bit#(1) en);
