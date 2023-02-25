@@ -17,7 +17,7 @@ interface LoRaIfc;
 	//transmission
 	method Action beginPacket(); //start packet
 	method Action endPacket(); //end packet
-	method ActionValue#(Bit#(8)) get(); //retrieve value.
+	//method ActionValue#(Bit#(8)) get(); //retrieve value.
 	method Action put(Bit#(8) x); //put value in packet.
 	
 	interface LoRaPins pins;
@@ -60,7 +60,7 @@ module mkLoRaMaster(LoRaIfc);
 	Reg#(Bool) spi_lock <- mkReg(False); //locks when SPI is busy
 	//Reg#(Bool) sf <- mkReg(False); //spreading factor set
 	
-	Reg#(Bit#(8)) payload_len <- mkReg(0); //length of packet in bytes
+	//Reg#(Bit#(8)) payload_len <- mkReg(0); //length of packet in bytes
 	
 	rule doInit(!init); //initialization step.
 		spi.setNcs(1);
@@ -85,7 +85,7 @@ module mkLoRaMaster(LoRaIfc);
 			pktCount <= pktCount - 1;
 		end else begin
 			pktCount <= 0;
-			transmit_reg_payload_len < = True;
+			transmit_reg_payload_len <= True;
 		end
 	endrule
 	
@@ -95,7 +95,7 @@ module mkLoRaMaster(LoRaIfc);
 		transmit_payload_len <= True;
 	endrule
 	
-	rule transmitRegPayloadLen(transmit_payload_len);
+	rule transmitPayloadLen(transmit_payload_len);
 		spi.put(payload_len);
 		payload_len <= 0;
 		transmit_payload_len <= False;
@@ -108,7 +108,7 @@ module mkLoRaMaster(LoRaIfc);
 		transmit_tx_op_code <= True;
 	endrule
 	
-	rule transmitRegOpMode(transmit_tx_op_code);
+	rule transmitOpMode(transmit_tx_op_code);
 		spi.put(8'b00001000 | 8'b00000011); //MODE_LONG_RANGE_MODE | MODE_TX 
 		transmit_tx_op_code <= False;
 		transmit_reg_irq_flags <= True;
@@ -119,31 +119,31 @@ module mkLoRaMaster(LoRaIfc);
 		transmit_reg_irq_flags <= False;
 	endrule
 	
-	rule checkTx(checkTxDone)
-		if (spi.get() && 8'b00001000 == 0) begin
+	rule checkTx(init && checkTxDone);
+		let result <- spi.get();
+		if ((result & 8'b00001000) == 0) begin
 			spi.setNcs(1);
 		end
 		checkTxDone <= False;
 	endrule
 
-	method Action beginPacket() if !packet;
+	method Action beginPacket() if (!packet);
 		packet <= True;
-		idle <= False;
 	endmethod
 		
-	method Action put(Bit#(8) x) if packet;
+	method Action put(Bit#(8) x) if (packet);
 		shiftReg[(pktCount+1)*8-1:(pktCount)*8] <= x;
-		pktIndexReg <= pktIndexReg + 1;
+		pktCount <= pktCount + 1;
 	endmethod
 	
-	method Action endPacket() if packet && pktCount > 0;
+	method Action endPacket() if (packet && pktCount > 0);
 		packet <= False;
 		payload_len <= pktCount;
 		spi.setNcs(0);
 		transmit_reg_fifo <= True;
 	endmethod
 	
-	method Action setSPISclkDiv(Bit#(16) d) if (ncsReg == 1);
+	method Action setSPISclkDiv(Bit#(16) d);
         spi.setSclkDiv(d);
     endmethod
 	
@@ -153,16 +153,16 @@ module mkLoRaMaster(LoRaIfc);
 	
 	interface LoRaPins pins;
         method Bit#(1) sclk;
-            return spi.sclk;
+            return spi.pins.sclk;
         endmethod
         method Bit#(1) mosi;
-            return spi.mosi;
+            return spi.pins.mosi;
         endmethod
         method Action miso(Bit#(1) x);
-            spi.miso(x);
+            spi.pins.miso(x);
         endmethod
         method Bit#(1) ncs;
-            return spi.ncs;
+            return spi.pins.ncs;
         endmethod
         //interface Clock deleteme_unused_clock = clock;
     endinterface	
