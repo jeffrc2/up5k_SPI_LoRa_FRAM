@@ -9,7 +9,7 @@ endinterface
 
 interface FRAMIfc;
 	//configuration
-	method Action setSPISclkDiv(Bit#(16) d);
+	//method Action setSPISclkDiv(Bit#(16) d);
 	
 	method Action writeEnable(Bit#(1) en);
 	method Action readReq(Bit#(32)addr); //retrieve value from addr.
@@ -20,7 +20,7 @@ interface FRAMIfc;
 	
 endinterface
 
-module mkFRAMMaster(LoRaIfc);
+module mkFRAMMaster(FRAMIfc);
 	let clock <- exposeCurrentClock();
 	SPIMaster spi <- mkSPIMaster;
 	
@@ -44,12 +44,12 @@ module mkFRAMMaster(LoRaIfc);
 		idle <= False;
 	endrule
 	
-	rule load(!idle && counter != 0);
-		spi.put(buffer[0:7]);
+	rule load(init && !idle && counter != 0);
+		spi.put(buffer[7:0]);
 		buffer <= buffer << 8;
 		if (counter > 1) begin
 			counter <= counter - 1;
-		else begin
+		end else begin
 			counter <= 0;
 			if (!writeEn) begin //wait for value
 				readWait <= True;
@@ -60,8 +60,9 @@ module mkFRAMMaster(LoRaIfc);
 		end
 	endrule
 	
-	rule fetch(readWait);
-		readResult <= spi.get();
+	rule fetch(init && idle && readWait);
+		let result <- spi.get();
+		readResult <= result;
 		readWait <= False;
 		readReady <= True;
 		spi.setNcs(1);
@@ -78,48 +79,47 @@ module mkFRAMMaster(LoRaIfc);
 		end
 	endmethod
 	
-	method Action writeReq(Bit#(32) addr, Bit#(8) x) if (writeEnable && idle);
-		buffer[0:7] <= 8'b00000010; //OPCODE_WRITE
-		buffer[8:15] <= addr[31:24];
-		buffer[16:23] <= addr[23:16];
-		buffer[24:31] <= addr[15:8];
-		buffer[32:39] <= addr[7:0];
-		buffer[40:47] <= x;
+	method Action writeReq(Bit#(32) addr, Bit#(8) x) if (writeEn && idle);
+		buffer[7:0] <= 8'b00000010; //OPCODE_WRITE
+		buffer[15:8] <= addr[31:24];
+		buffer[23:16] <= addr[23:16];
+		buffer[31:24] <= addr[15:8];
+		buffer[39:32] <= addr[7:0];
+		buffer[47:40] <= x;
 		counter <= 6;
 		idle <= False;
 		spi.setNcs(0);
 	endmethod
 	
 	method Action readReq(Bit#(32) addr) if (idle);
-		buffer[0:7] <= 8'b00000011; //OPCODE_READ
-		buffer[8:15] <= addr[31:24];
-		buffer[16:23] <= addr[23:16];
-		buffer[24:31] <= addr[15:8];
-		buffer[32:39] <= addr[7:0];
+		buffer[7:0] <= 8'b00000011; //OPCODE_READ
+		buffer[15:8] <= addr[31:24];
+		buffer[23:16] <= addr[23:16];
+		buffer[31:24] <= addr[15:8];
+		buffer[39:32] <= addr[7:0];
 		counter <= 5;
 		idle <= False;
 		spi.setNcs(0);
 		readReady <= False;
 	endmethod
 	
-	method Bit#(8) readFetch() if readReady;
+	method Bit#(8) readFetch() if (readReady);
 		return readResult;
 	endmethod
 	
 	interface FRAMPins pins;
         method Bit#(1) sclk;
-            return spi.sclk;
+            return spi.pins.sclk;
         endmethod
         method Bit#(1) mosi;
-            return spi.mosi;
+            return spi.pins.mosi;
         endmethod
         method Action miso(Bit#(1) x);
-            spi.miso(x);
+            spi.pins.miso(x);
         endmethod
         method Bit#(1) ncs;
-            return spi.ncs;
+            return spi.pins.ncs;
         endmethod
-        //interface Clock deleteme_unused_clock = clock;
     endinterface		
 	
 endmodule
