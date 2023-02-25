@@ -14,28 +14,32 @@ endinterface
 
 
 module mkMain(MainIfc);
-	FRAMMaster fram <- mkFRAMMaster;
-	LoRaMaster LoRa <- mkLoRaMaster;
+	FRAMIfc fram1 <- mkFRAMMaster;
+	LoRaIfc lora0 <- mkLoRaMaster;
 
 	Clock curclk <- exposeCurrentClock;
 
 	method Bit#(3) spi0_out;//LoRa output pins
-		return {LoRa.ncs, LoRa.mosi, LoRa.sclk};
+		return {lora0.pins.ncs, lora0.pins.mosi, lora0.pins.sclk};
 	endmethod
 	
 	method Bit#(3) spi1_out; //fram output pins
-		return {fram.ncs, fram.mosi, fram.sclk};
+		return {fram1.pins.ncs, fram1.pins.mosi, fram1.pins.sclk};
 	endmethod
 	
 	method Action spi0_in(Bit#(1) miso0); //LoRa input pin
-		LoRa.miso(miso0);
+		lora0.pins.miso(miso0);
 	endmethod
 	
 	method Action spi1_in(Bit#(1) miso1); //fram input pin
-		fram.miso(miso1);
+		fram1.pins.miso(miso1);
 	endmethod
 	
 	method ActionValue#(Bit#(8)) uartOut;
+		return 0;
+	endmethod
+	
+	method Bit#(3) rgbOut;
 		return 0;
 	endmethod
 	
