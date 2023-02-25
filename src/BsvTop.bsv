@@ -16,15 +16,27 @@ interface BsvTopIfc;
 	(* always_ready *)
 	method Bit#(1) red;
 	
-	method Bit#(1) spi0_cs;
-	method Bit#(1) spi0_mosi;
-	method Action spi0_miso(Bit#(1) miso0);
-	method Bit#(1) spi0_sclk;
+	//LoRa
+	(* always_ready *)
+	method Bit#(1) lora_cs;
+	(* always_ready *)
+	method Bit#(1) lora_mosi;  
+	(* always_ready *)
+	(* prefix = "", result = "lora_miso" *)
+	method Action lora_miso((* port="lora_miso" *)Bit#(1) miso0);
+	(* always_ready *)
+	method Bit#(1) lora_sclk;
 	
-	method Bit#(1) spi1_cs;
-	method Bit#(1) spi1_mosi;
-	method Action spi1_miso(Bit#(1) miso1);
-	method Bit#(1) spi1_sclk;
+	//FRAM
+	(* always_ready *)
+	method Bit#(1) fram_cs;
+	(* always_ready *)
+	method Bit#(1) fram_mosi;
+	(* always_ready *)
+	(* prefix = "", result = "fram_miso" *)
+	method Action fram_miso((* port="fram_miso" *) Bit#(1) miso1);
+	(* always_ready *)
+	method Bit#(1) fram_sclk;
 	
 	(* always_ready *)
 	method Bit#(1) serial_txd;
@@ -56,36 +68,37 @@ module mkBsvTop(BsvTopIfc);
 		return hwmain.rgbOut()[0];
 	endmethod
 	
-	method Bit#(1) spi0_cs;
+	method Bit#(1) lora_cs;
 		return hwmain.spi0_out()[0];
 	endmethod
 	
-	method Bit#(1) spi0_mosi;
+	method Bit#(1) lora_mosi;
 		return hwmain.spi0_out()[1];
 	endmethod
 	
-	method Bit#(1) spi0_sclk;
+	method Bit#(1) lora_sclk;
 		return hwmain.spi0_out()[2];
 	endmethod
 	
-	method Bit#(1) spi1_cs;
+	method Bit#(1) fram_cs;
 		return hwmain.spi1_out()[0];
 	endmethod
 	
-	method Bit#(1) spi1_mosi;
+	method Bit#(1) fram_mosi;
 		return hwmain.spi1_out()[1];
 	endmethod
 	
-	method Bit#(1) spi1_sclk;
+	method Bit#(1) fram_sclk;
 		return hwmain.spi1_out()[2];
 	endmethod
 	
-	method Action spi0_miso(Bit#(1) miso0);
+
+	method Action lora_miso(Bit#(1) miso0);
 		hwmain.spi0_in(miso0);
 	endmethod
 	
-	method Action spi1_miso(Bit#(1) miso1);
-		hwmain.spi1_in(miso0);
+	method Action fram_miso(Bit#(1) miso1);
+		hwmain.spi1_in(miso1);
 	endmethod
 	
 	method Bit#(1) serial_txd;
