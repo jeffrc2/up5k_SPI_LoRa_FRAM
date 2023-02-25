@@ -1,19 +1,20 @@
 module top (output wire led_blue,
-               output wire led_green,
-               output wire led_red,
+				output wire led_green,
+				output wire led_red,
 			   
-			   //lora
-			   output wire spi0_sclk,
-			   output wire spi0_mosi,
-			   input wire spi0_miso,
-			   output wire spi0_cs,
-			   //fram
-			   output wire spi1_sclk,
-			   output wire spi1_mosi,
-			   input wire spi1_miso,
-			   output wire spi1_cs,
+				//lora
+				output wire spi0_sclk,
+				output wire spi0_mosi,
 			   
-
+				output wire spi0_cs,
+				//fram
+				output wire spi1_sclk,
+				output wire spi1_mosi,
+				output wire spi1_cs,
+				
+				input wire  spi1_miso,
+				input wire spi0_miso,
+				
 				output serial_txd,
 				input serial_rxd,
 
@@ -43,7 +44,7 @@ module top (output wire led_blue,
 	end
 
 	mkBsvTop hwtop(.CLK(clk), .RST_N(rst), .blue(led_blue), .green(led_green), .red(led_red), 
-		.spi0_sclk(spi0_sclk), .spi0_mosi(spi0_mosi), .spi0_miso(spi0_miso), .spi0_cs(spi0_cs), //LoRa
-		.spi1_sclk(spi1_sclk), .spi1_mosi(spi1_mosi), .spi0_miso(spi1_miso), .spi1_cs(spi1_cs), //FRAM
+		.lora_sclk(spi0_sclk), .lora_mosi(spi0_mosi), .lora_miso(spi0_miso), .lora_cs(spi0_cs), //LoRa
+		.fram_sclk(spi1_sclk), .fram_mosi(spi1_mosi), .fram_miso(spi1_miso), .fram_cs(spi1_cs), //FRAM
 		.serial_txd(serial_txd), .serial_rxd(serial_rxd));
 endmodule
