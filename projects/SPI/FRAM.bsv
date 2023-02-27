@@ -46,7 +46,7 @@ module mkFRAMMaster(FRAMIfc);
 	
 	rule load(init && !idle && counter != 0);
 		spi.put(buffer[7:0]);
-		buffer <= buffer << 8;
+		buffer <= buffer >> 8;
 		if (counter > 1) begin
 			counter <= counter - 1;
 		end else begin
