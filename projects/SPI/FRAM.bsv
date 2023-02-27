@@ -60,7 +60,7 @@ module mkFRAMMaster(FRAMIfc);
 		end
 	endrule
 	
-	rule fetch(init && idle && readWait);
+	rule fetch(init && !idle && readWait);
 		let result <- spi.get();
 		readResult <= result;
 		readWait <= False;
