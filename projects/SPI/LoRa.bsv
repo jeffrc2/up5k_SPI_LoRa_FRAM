@@ -78,7 +78,7 @@ module mkLoRaMaster(LoRaIfc);
 	
 	rule transmitShiftVal(transmit_shiftValue);
 		spi.put(shiftReg[7:0]);
-		shiftReg <= shiftReg << 8;
+		shiftReg <= shiftReg >> 8;
 		transmit_shiftValue <= False;
 		if (pktCount > 1) begin //run another.
 			transmit_reg_fifo <= True;
