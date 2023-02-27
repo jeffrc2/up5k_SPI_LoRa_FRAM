@@ -117,6 +117,7 @@ module mkLoRaMaster(LoRaIfc);
 	rule transmitRegIRQFlag(transmit_reg_irq_flags);
 		spi.put(8'b00010010);
 		transmit_reg_irq_flags <= False;
+		checkTxDone <= True;
 	endrule
 	
 	rule checkTx(init && checkTxDone);
